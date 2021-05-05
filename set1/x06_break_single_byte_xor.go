@@ -16,16 +16,24 @@ func HammingDistance(a, b []byte) (int, error) {
 	return distance, nil
 }
 
-// func FindKeySize(ciphertext []byte) (int, error) {
-// 	bestKeySize, bestDistance := 0.0, 10000.0
-// 	for keySize := 2; keySize < 40; keySize++ {
-// 		firstBytes := ciphertext[:keySize]
-// 		secondBytes := ciphertext[keySize:2*keySize]
-// 		distance, err := HammingDistance(firstBytes, secondBytes)
-// 		if err != nil { return 0, err }
+func FindKeySize(ciphertext []byte) (int, error) {
+	bestKeySize, bestDistance := 0, 10000.0
+	for keySize := 2; keySize < 40; keySize++ {
+		distance := 0
+		for i := 0; i < 4; i++ {
 
-// 		if float64(distance / keySize) < bestDistance {
+			firstBytes := ciphertext[i*keySize:(i+1)*keySize]
+			secondBytes := ciphertext[(i+1)*keySize:(i+2)*keySize]
 
-// 		}
-// 	} 
-// }
+			currentDistance, err := HammingDistance(firstBytes, secondBytes)
+			if err != nil { return 0, err }
+			distance += currentDistance
+		}
+		normalizedDistance := float64(distance) / float64(keySize)
+		if normalizedDistance < bestDistance {
+			bestDistance = normalizedDistance
+			bestKeySize = keySize
+		}
+	}
+	return bestKeySize, nil
+}
