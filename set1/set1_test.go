@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"math/rand"
 	"strings"
 	"testing"
@@ -35,17 +34,17 @@ func TestChallenge2(t *testing.T) {
 
 		left, err := hex.DecodeString("1c0111001f010100061a024b53535009181c")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		right, err := hex.DecodeString("686974207468652062756c6c277320657965")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		expected, err := hex.DecodeString("746865206b696420646f6e277420706c6179")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		got, err := XOR(left, right)
@@ -117,7 +116,7 @@ func TestChallenge3(t *testing.T) {
 	t.Run("Breaking example", func(t *testing.T) {
 		encrypted_data, err := hex.DecodeString("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		decrypted_data, key, _ := SingleByteXORDecipher(encrypted_data)
@@ -134,7 +133,7 @@ func TestChallenge4(t *testing.T) {
 	t.Run("Breaking example", func(t *testing.T) {
 		file, err := utils.GetFile("https://cryptopals.com/static/challenge-data/4.txt")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		lines := bytes.Split(file, []byte("\n"))
@@ -158,7 +157,7 @@ func TestChallenge5(t *testing.T) {
 			"0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272" +
 				"a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		output := RepeatingKeyXOR(key, payload)
@@ -176,7 +175,7 @@ func TestChallenge6(t *testing.T) {
 
 		output, err := HammingDistance(byte1, byte2)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 		expected := 37
 
@@ -187,18 +186,18 @@ func TestChallenge6(t *testing.T) {
 	t.Run("Key size analysis", func(t *testing.T) {
 		file, err := utils.GetFile("https://cryptopals.com/static/challenge-data/6.txt")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		encodedCiphertext := strings.Replace(string(file), "\n", "", -1)
 		rawCiphertext, err := base64.StdEncoding.DecodeString(encodedCiphertext)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		keySize, err := FindKeySize(rawCiphertext)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		expected := 29
@@ -211,17 +210,17 @@ func TestChallenge6(t *testing.T) {
 	t.Run("Break Repeating key XOR", func(t *testing.T) {
 		file, err := utils.GetFile("https://cryptopals.com/static/challenge-data/6.txt")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		encodedCiphertext := strings.Replace(string(file), "\n", "", -1)
 		rawCiphertext, err := base64.StdEncoding.DecodeString(encodedCiphertext)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 		keySize, err := FindKeySize(rawCiphertext)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		key, decryptedText := RepeatingKeyXORDecipher(rawCiphertext, keySize)
@@ -242,13 +241,13 @@ func TestChallenge7(t *testing.T) {
 	t.Run("Should decrypt the message normally", func(t *testing.T) {
 		file, err := utils.GetFile("https://cryptopals.com/static/challenge-data/7.txt")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		encodedCiphertext := strings.Replace(string(file), "\n", "", -1)
 		rawCiphertext, err := base64.StdEncoding.DecodeString(encodedCiphertext)
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 		key := []byte("YELLOW SUBMARINE")
 
@@ -277,7 +276,7 @@ func TestChallenge8(t *testing.T) {
 	t.Run("Detect AES ECB 128bit from cryptopals", func(t *testing.T) {
 		file, err := utils.GetFile("https://cryptopals.com/static/challenge-data/8.txt")
 		if err != nil {
-			log.Fatal(err)
+			t.Error(err)
 		}
 
 		lines := utils.RemoveEmptyStrings(strings.Split(string(file), "\n"))
@@ -287,7 +286,7 @@ func TestChallenge8(t *testing.T) {
 			fmt.Println(lines[i])
 			data, err := hex.DecodeString(lines[i])
 			if err != nil {
-				log.Fatal(err)
+				t.Error(err)
 			}
 			rawLines[i] = data
 			fmt.Println(data)
