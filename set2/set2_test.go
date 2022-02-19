@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cryptopals/utils"
 	"encoding/base64"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -91,5 +92,48 @@ func TestChallenge10(t *testing.T) {
 		if !strings.Contains(string(decrypt), "Play that funky music") {
 			t.Error("challenge 10 file didn't decrypt properly")
 		}
+	})
+}
+
+func TestChallenge11(t *testing.T) {
+	t.Run("guess block cipher", func(t *testing.T) {
+		input := []byte("things repeated things repeated things repeated")
+		data, expected := OracleEncrypt(input)
+
+		got := GuessBlockCipher(data)
+
+		if got != expected {
+			t.Errorf("got: %s, expected: %s", got, expected)
+		}
+	})
+}
+
+func TestChallenge12(t *testing.T) {
+	t.Run("Guess key size", func(t *testing.T) {
+		encryptor := NewEncryptor()
+
+		guess := encryptor.KeySize()
+
+		if guess != len(encryptor.key) {
+			t.Errorf("got: %d, expected: %d", guess, len(encryptor.key))
+		}
+	})
+
+	t.Run("Make sure we're using ECB", func(t *testing.T) {
+		e := NewEncryptor()
+
+		cipherText := e.Encrypt([]byte(strings.Repeat("A", e.KeySize()*3)))
+		got := GuessBlockCipher(cipherText)
+
+		if got != "ECB" {
+			t.Errorf("got: %s, expected: ECB", got)
+		}
+	})
+
+	t.Run("Single byte testing", func(t *testing.T) {
+		e := NewEncryptor()
+
+		res := e.BruteForceSingleByte()
+		fmt.Println(string(res))
 	})
 }
