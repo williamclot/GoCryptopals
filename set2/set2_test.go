@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"cryptopals/utils"
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -130,10 +129,12 @@ func TestChallenge12(t *testing.T) {
 		}
 	})
 
-	t.Run("Single byte testing", func(t *testing.T) {
+	t.Run("Retrieve the unkown", func(t *testing.T) {
 		e := NewEncryptor()
 
 		res := e.BruteForceSingleByte()
-		fmt.Println(string(res))
+		if !strings.Contains(string(res), "Did you stop? No, I just drove by") {
+			t.Errorf("got: %s", string(res))
+		}
 	})
 }

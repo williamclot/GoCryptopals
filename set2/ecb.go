@@ -54,14 +54,15 @@ func (e *ECBEncryption) KeySize() int {
 
 func (e *ECBEncryption) BruteForceSingleByte() []byte {
 
-	// block length of unknown ciphertext
+	// block length and unknown size (with padding)
 	unknownSize := len(e.Encrypt([]byte{}))
 	blockSize := len(e.key)
 	unknowBlockCount := int(unknownSize / blockSize)
 
-	// Placeholder for decrypted unknown value
+	// Placeholder for unknown value
 	unknown := make([]byte, 0, unknownSize)
 
+	// Looping over each block of unknown
 	for block := 0; block < unknowBlockCount; block++ {
 
 		// Looping over each byte position in the block
@@ -70,18 +71,23 @@ func (e *ECBEncryption) BruteForceSingleByte() []byte {
 			cipherTextReference := e.Encrypt(inputReference)
 
 			// Iterate over all posibilities to guess byte value
-			for x := byte(0); x <= byte(255); x++ {
+			for x := 0; x <= 255; x++ {
 				input := append(inputReference, unknown...)
-				cipherText := e.Encrypt(append(input, x))
+				cipherText := e.Encrypt(append(input, byte(x)))
 
+				// if we've found a byte so that our block of cipher text matches the cipher text
+				// reference than we've found an extra byte of unknown!
 				if bytes.Equal(cipherText[block:blockSize*(block+1)], cipherTextReference[block:blockSize*(block+1)]) {
-					unknown = append(unknown, x)
+					unknown = append(unknown, byte(x))
 					break
 				}
+			}
 
-				if x == byte(255) {
-					return unknown[:len(unknown)-1]
-				}
+			// Our breakpoint: if no suitable byte is found after iterating through all possibilities,
+			// then we've reached the padding of unknown and got a first padding value during the previous
+			// iteration; we can return unknown and remove the last byte (which was a padding value).
+			if len(unknown) != block*blockSize+pos+1 {
+				return unknown[:len(unknown)-1]
 			}
 		}
 	}
