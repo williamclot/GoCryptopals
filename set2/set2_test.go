@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"cryptopals/utils"
 	"encoding/base64"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 // Implement PKCS#7 padding
@@ -136,5 +139,82 @@ func TestChallenge12(t *testing.T) {
 		if !strings.Contains(string(res), "Did you stop? No, I just drove by") {
 			t.Errorf("got: %s", string(res))
 		}
+	})
+}
+
+func TestChallenge13(t *testing.T) {
+	t.Run("decode URL", func(t *testing.T) {
+		got := URLDecode("email=bar&uid=1234&role=user")
+		expected := Profile{
+			Email: "bar",
+			UID:   "1234",
+			Role:  "user",
+		}
+		if diff := cmp.Diff(expected, got); diff != "" {
+			t.Errorf("Expected (-) but got (+):\n%s", diff)
+		}
+	})
+	t.Run("encode URL", func(t *testing.T) {
+		got := URLEncode(Profile{
+			Email: "bar",
+			UID:   "1234",
+			Role:  "user",
+		})
+		expected := "email=bar&uid=1234&role=user"
+		if got != expected {
+			t.Errorf("got: %s, expected: %s", got, expected)
+		}
+	})
+	t.Run("profile for", func(t *testing.T) {
+		got := URLDecode(ProfileFor("john.doe@test&people.com"))
+		expected := Profile{
+			Email: "john.doe@testpeople.com",
+			Role:  "user",
+		}
+
+		if got.UID == "" {
+			t.Errorf("Expected a UID but none was found: %v", got)
+		}
+
+		expected.UID = got.UID
+
+		if diff := cmp.Diff(expected, got); diff != "" {
+			t.Errorf("Expected (-) but got (+):\n%s", diff)
+		}
+	})
+	t.Run("profile encryptor round trip", func(t *testing.T) {
+		e := NewProfileEncryptor()
+		target_email := "test@people.com"
+		cipher := e.Encrypt(target_email)
+		data := URLDecode(e.Decrypt(cipher))
+
+		if data.Email != target_email {
+			t.Errorf("error encrypting/decrypting profile")
+		}
+	})
+
+	// Given an email address, can we make our profile "token"
+	// escalate from "user" to "admin" without knowing the encryption key?
+	t.Run("make profile admin", func(t *testing.T) {
+		e := NewProfileEncryptor()
+
+		profile, err := e.Escalate("me@test.com")
+		if err != nil {
+			t.Error(err)
+		}
+
+		// very that the profile is now an admin
+		data := URLDecode(e.Decrypt(profile))
+		if data.Role != "admin" {
+			t.Errorf("was expecting role: admin but got: %s", data.Role)
+		}
+	})
+}
+
+func TestChallenge14(t *testing.T) {
+	t.Run("retrieve target", func(t *testing.T) {
+		e := NewEncryptor()
+		test := e.BruteForceSingleByteHarder()
+		fmt.Println(test)
 	})
 }
